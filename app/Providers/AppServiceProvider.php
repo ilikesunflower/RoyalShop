@@ -17,19 +17,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $products = DB::table('brands as b')
-        ->join('products as p','p.brand_id','=','b.id')
-        ->join('categories as c', 'c.id', '=', 'p.category_id')
-        ->select('p.*', 'b.name as brand_name' , 'c.name as category_name')
-        ->get();
-        $categories = Category::all();
-
-        foreach ($products as $key => $value) {
-             $value->thumbnail = DB::table('images')->where('product_id',$value->id)->first();
-             
-        }
-        
-        View::share(['categories'=>$categories, 'products'=>$products]);
+        view()->composer('*', function ($view) {
+            $products = DB::table('brands as b')
+                ->join('products as p', 'p.brand_id', '=', 'b.id')
+                ->join('categories as c', 'c.id', '=', 'p.category_id')
+                ->select('p.*', 'b.name as brand_name', 'c.name as category_name')
+                ->get();
+            $categories = Category::all();
+            foreach ($products as $key => $value) {
+                $value->thumbnail = DB::table('images')->where('product_id', $value->id)->first();
+            }
+            $view->with('ViewComposerServiceProvider', $categories);
+            $view->with('products', $products);
+        });
     }
 
     /**
